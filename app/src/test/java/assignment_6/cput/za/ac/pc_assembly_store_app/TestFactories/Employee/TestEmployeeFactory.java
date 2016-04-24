@@ -6,7 +6,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import assignment_6.cput.za.ac.pc_assembly_store_app.domain.Employee.Employee;
-import assignment_6.cput.za.ac.pc_assembly_store_app.domain.Employee.Gender;
 import assignment_6.cput.za.ac.pc_assembly_store_app.factories.EmployeeFactory;
 import assignment_6.cput.za.ac.pc_assembly_store_app.factories.impl.EmployeeFactoryImpl;
 

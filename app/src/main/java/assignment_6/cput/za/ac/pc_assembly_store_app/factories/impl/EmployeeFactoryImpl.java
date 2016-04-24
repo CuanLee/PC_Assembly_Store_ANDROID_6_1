@@ -2,12 +2,8 @@ package assignment_6.cput.za.ac.pc_assembly_store_app.factories.impl;
 
 
 
-import java.util.List;
-
-import assignment_6.cput.za.ac.pc_assembly_store_app.domain.PC.Chassis;
 import assignment_6.cput.za.ac.pc_assembly_store_app.domain.Employee.ContactDetails;
 import assignment_6.cput.za.ac.pc_assembly_store_app.domain.Employee.Employee;
-import assignment_6.cput.za.ac.pc_assembly_store_app.domain.Employee.Gender;
 import assignment_6.cput.za.ac.pc_assembly_store_app.domain.Employee.GeographicalDetails;
 import assignment_6.cput.za.ac.pc_assembly_store_app.factories.EmployeeFactory;
 
