@@ -38,7 +38,7 @@ public class Employee implements IPerson,Serializable {
     }
 
     @Override
-    public String getSGender() {
+    public String getGender() {
         return gender;
     }
 

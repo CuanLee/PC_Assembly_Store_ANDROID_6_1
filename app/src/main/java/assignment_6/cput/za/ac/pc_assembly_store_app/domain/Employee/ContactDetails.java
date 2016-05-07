@@ -9,7 +9,7 @@ public class ContactDetails implements Serializable{
     private String telephone;
     private String email;
 
-    private ContactDetails(){
+    public ContactDetails(){
 
     }
 

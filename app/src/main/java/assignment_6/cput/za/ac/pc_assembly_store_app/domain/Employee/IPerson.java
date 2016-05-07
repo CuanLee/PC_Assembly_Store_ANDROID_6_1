@@ -7,5 +7,5 @@ public interface IPerson {
     Long getID();
     String getFirstName();
     String getLastName();
-    String getSGender();
+    String getGender();
 }

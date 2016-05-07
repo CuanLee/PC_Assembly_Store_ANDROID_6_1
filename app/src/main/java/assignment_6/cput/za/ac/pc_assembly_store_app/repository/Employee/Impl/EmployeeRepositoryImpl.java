@@ -1,22 +1,27 @@
 package assignment_6.cput.za.ac.pc_assembly_store_app.repository.Employee.Impl;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import assignment_6.cput.za.ac.pc_assembly_store_app.conf.database.DBConstants;
+import assignment_6.cput.za.ac.pc_assembly_store_app.domain.Employee.ContactDetails;
 import assignment_6.cput.za.ac.pc_assembly_store_app.domain.Employee.Employee;
+import assignment_6.cput.za.ac.pc_assembly_store_app.domain.Employee.GeographicalDetails;
 import assignment_6.cput.za.ac.pc_assembly_store_app.repository.Employee.EmployeeRepository;
 import assignment_6.cput.za.ac.pc_assembly_store_app.repository.Repository;
 
 /**
  * Created by CuanL on 19/04/2016.
  */
-/*public class EmployeeRepositoryImpl extends SQLiteOpenHelper implements EmployeeRepository{
+public class EmployeeRepositoryImpl extends SQLiteOpenHelper implements EmployeeRepository{
     public static final String TABLE_NAME = "hdd";
     private SQLiteDatabase db;
 
@@ -26,9 +31,15 @@ import assignment_6.cput.za.ac.pc_assembly_store_app.repository.Repository;
     public static final String COLUMN_FIRSTNAME = "firstName";
     public static final String COLUMN_LASTNAME = "lastName";
     public static final String COLUMN_GENDER = "gender";
-    public static final String COLUMN_CONTACT_DETAILS = "contactDetails";
-    public static final String COLUMN_GEOGRAPHICAL_DETAILS = "geographicalDetails";
     public static final String COLUMN_ID_NUMBER = "idNumber";
+    public static final String COLUMN_TELEPHONE = "telephone";
+    public static final String COLUMN_EMAIL = "email";
+    public static final String COLUMN_COUNTRY = "country";
+    public static final String COLUMN_PROVINCE = "province";
+    public static final String COLUMN_CITY = "city";
+    public static final String COLUMN_SUBURB = "suburb";
+    public static final String COLUMN_STREET = "street";
+    public static final String COLUMN_HOUSE_NUMBER = "houseNumber";
 
     private static final String DATABASE_CREATE = " CREATE TABLE "
             + TABLE_NAME + "("
@@ -38,8 +49,14 @@ import assignment_6.cput.za.ac.pc_assembly_store_app.repository.Repository;
             + COLUMN_FIRSTNAME + " TEXT  NOT NULL , "
             + COLUMN_LASTNAME + " TEXT  NOT NULL , "
             + COLUMN_GENDER + " TEXT  NOT NULL , "
-            + COLUMN_CONTACT_DETAILS + " REAL  NULL , "
-            + COLUMN_GEOGRAPHICAL_DETAILS + " REAL NULL , "
+            + COLUMN_TELEPHONE + " TEXT  NULL , "
+            + COLUMN_EMAIL + " TEXT  NULL , "
+            + COLUMN_COUNTRY + " TEXT NULL , "
+            + COLUMN_PROVINCE + " TEXT NULL , "
+            + COLUMN_CITY + " TEXT NULL , "
+            + COLUMN_SUBURB + " TEXT NULL , "
+            + COLUMN_STREET + " TEXT NULL , "
+            + COLUMN_HOUSE_NUMBER + " INTEGER NULL , "
             + COLUMN_ID_NUMBER + " TEXT NOT NULL );";
 
     public EmployeeRepositoryImpl(Context context)
@@ -56,7 +73,7 @@ import assignment_6.cput.za.ac.pc_assembly_store_app.repository.Repository;
     }
 
     @Override
-    public Employee findById(Long aLong) {
+    public Employee findById(Long id) {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.query(
                 TABLE_NAME,
@@ -67,9 +84,15 @@ import assignment_6.cput.za.ac.pc_assembly_store_app.repository.Repository;
                         COLUMN_FIRSTNAME,
                         COLUMN_LASTNAME,
                         COLUMN_GENDER,
-                        COLUMN_CONTACT_DETAILS,
-                        COLUMN_GEOGRAPHICAL_DETAILS,
-                        COLUMN_ID_NUMBER,
+                        COLUMN_TELEPHONE,
+                        COLUMN_EMAIL,
+                        COLUMN_COUNTRY,
+                        COLUMN_PROVINCE,
+                        COLUMN_CITY,
+                        COLUMN_SUBURB,
+                        COLUMN_STREET,
+                        COLUMN_HOUSE_NUMBER,
+                        COLUMN_ID_NUMBER},
                 COLUMN_ID + " =? ",
                 new String[]{String.valueOf(id)},
                 null,
@@ -77,19 +100,33 @@ import assignment_6.cput.za.ac.pc_assembly_store_app.repository.Repository;
                 null,
                 null);
         if (cursor.moveToFirst()) {
-            final Employee hdd = new Employee.Builder()
+            final ContactDetails contactDetails = new ContactDetails.Builder()
+                    .email(cursor.getString(cursor.getColumnIndex(COLUMN_EMAIL)))
+                    .telephone(cursor.getString(cursor.getColumnIndex(COLUMN_TELEPHONE)))
+                    .build();
+
+            final GeographicalDetails geographicalDetails = new GeographicalDetails.Builder()
+                    .city(cursor.getString(cursor.getColumnIndex(COLUMN_CITY)))
+                    .country(cursor.getString(cursor.getColumnIndex(COLUMN_COUNTRY)))
+                    .province(cursor.getString(cursor.getColumnIndex(COLUMN_PROVINCE)))
+                    .suburb(cursor.getString(cursor.getColumnIndex(COLUMN_SUBURB)))
+                    .street(cursor.getString(cursor.getColumnIndex(COLUMN_STREET)))
+                    .houseNumber(cursor.getInt(cursor.getColumnIndex(COLUMN_HOUSE_NUMBER)))
+                    .build();
+
+            final Employee employee = new Employee.Builder()
                     .id(cursor.getLong(cursor.getColumnIndex(COLUMN_ID)))
                     .username(cursor.getString(cursor.getColumnIndex(COLUMN_USERNAME)))
                     .password(cursor.getString(cursor.getColumnIndex(COLUMN_PASSWORD)))
                     .firstName(cursor.getString(cursor.getColumnIndex(COLUMN_FIRSTNAME)))
                     .lastName(cursor.getString(cursor.getColumnIndex(COLUMN_LASTNAME)))
                     .gender(cursor.getString(cursor.getColumnIndex(COLUMN_GENDER)))
-                    .contactDetails(cursor.getBlob(cursor.getColumnIndex(COLUMN_CONTACT_DETAILS)))
-                    .geographicalDetails(cursor.getString(cursor.getColumnIndex(COLUMN_GEOGRAPHICAL_DETAILS)))
-                    .idNumber(cursor.getInt(cursor.getColumnIndex(COLUMN_ID_NUMBER)))
+                    .contactDetails(contactDetails)
+                    .geographicalDetails(geographicalDetails)
+                    .idNumber(cursor.getString(cursor.getColumnIndex(COLUMN_ID_NUMBER)))
                     .build();
 
-            return hdd;
+            return employee;
         } else {
             return null;
         }
@@ -97,26 +134,129 @@ import assignment_6.cput.za.ac.pc_assembly_store_app.repository.Repository;
 
     @Override
     public Employee save(Employee entity) {
-        return null;
+        open();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_ID, entity.getID());
+        values.put(COLUMN_USERNAME, entity.getUsername());
+        values.put(COLUMN_PASSWORD, entity.getPassword());
+        values.put(COLUMN_FIRSTNAME, entity.getFirstName());
+        values.put(COLUMN_LASTNAME, entity.getLastName());
+        values.put(COLUMN_GENDER, entity.getGender());
+        values.put(COLUMN_ID_NUMBER, entity.getIdNumber());
+        values.put(COLUMN_EMAIL, entity.getContactDetails().getEmail());
+        values.put(COLUMN_TELEPHONE, entity.getContactDetails().getTelephone());
+        values.put(COLUMN_CITY, entity.getGeographicalDetails().getCity());
+        values.put(COLUMN_COUNTRY, entity.getGeographicalDetails().getCountry());
+        values.put(COLUMN_PROVINCE, entity.getGeographicalDetails().getProvince());
+        values.put(COLUMN_SUBURB, entity.getGeographicalDetails().getSuburb());
+        values.put(COLUMN_STREET, entity.getGeographicalDetails().getStreet());
+        values.put(COLUMN_HOUSE_NUMBER, entity.getGeographicalDetails().getHouseNumber());
+
+        long id = db.insertOrThrow(TABLE_NAME, null, values);
+        Employee insertedEntity = new Employee.Builder()
+                .copy(entity)
+                .id(new Long(id))
+                .build();
+        return insertedEntity;
     }
 
     @Override
     public Employee update(Employee entity) {
-        return null;
+        open();
+        ContentValues values = new ContentValues();
+        values.put(COLUMN_ID, entity.getID());
+        values.put(COLUMN_USERNAME, entity.getUsername());
+        values.put(COLUMN_PASSWORD, entity.getPassword());
+        values.put(COLUMN_FIRSTNAME, entity.getFirstName());
+        values.put(COLUMN_LASTNAME, entity.getLastName());
+        values.put(COLUMN_GENDER, entity.getGender());
+        values.put(COLUMN_ID_NUMBER, entity.getIdNumber());
+        values.put(COLUMN_EMAIL, entity.getContactDetails().getEmail());
+        values.put(COLUMN_TELEPHONE, entity.getContactDetails().getTelephone());
+        values.put(COLUMN_CITY, entity.getGeographicalDetails().getCity());
+        values.put(COLUMN_COUNTRY, entity.getGeographicalDetails().getCountry());
+        values.put(COLUMN_PROVINCE, entity.getGeographicalDetails().getProvince());
+        values.put(COLUMN_SUBURB, entity.getGeographicalDetails().getSuburb());
+        values.put(COLUMN_STREET, entity.getGeographicalDetails().getStreet());
+        values.put(COLUMN_HOUSE_NUMBER, entity.getGeographicalDetails().getHouseNumber());
+        db.update(
+                TABLE_NAME,
+                values,
+                COLUMN_ID + " =? ",
+                new String[]{String.valueOf(entity.getID())}
+        );
+        return entity;
     }
 
     @Override
     public Employee delete(Employee entity) {
-        return null;
+        open();
+        db.delete(
+                TABLE_NAME,
+                COLUMN_ID + " =? ",
+                new String[]{String.valueOf(entity.getID())});
+        return entity;
     }
 
     @Override
     public Set<Employee> findAll() {
-        return null;
+        SQLiteDatabase db = this.getReadableDatabase();
+        Set<Employee> employeeSet = new HashSet<>();
+        open();
+        Cursor cursor = db.query(TABLE_NAME, null,null,null,null,null,null);
+        if (cursor.moveToFirst()) {
+            do {
+                final ContactDetails contactDetails = new ContactDetails.Builder()
+                        .email(cursor.getString(cursor.getColumnIndex(COLUMN_EMAIL)))
+                        .telephone(cursor.getString(cursor.getColumnIndex(COLUMN_TELEPHONE)))
+                        .build();
+
+                final GeographicalDetails geographicalDetails = new GeographicalDetails.Builder()
+                        .city(cursor.getString(cursor.getColumnIndex(COLUMN_CITY)))
+                        .country(cursor.getString(cursor.getColumnIndex(COLUMN_COUNTRY)))
+                        .province(cursor.getString(cursor.getColumnIndex(COLUMN_PROVINCE)))
+                        .suburb(cursor.getString(cursor.getColumnIndex(COLUMN_SUBURB)))
+                        .street(cursor.getString(cursor.getColumnIndex(COLUMN_STREET)))
+                        .houseNumber(cursor.getInt(cursor.getColumnIndex(COLUMN_HOUSE_NUMBER)))
+                        .build();
+
+                final Employee employee = new Employee.Builder()
+                        .id(cursor.getLong(cursor.getColumnIndex(COLUMN_ID)))
+                        .username(cursor.getString(cursor.getColumnIndex(COLUMN_USERNAME)))
+                        .password(cursor.getString(cursor.getColumnIndex(COLUMN_PASSWORD)))
+                        .firstName(cursor.getString(cursor.getColumnIndex(COLUMN_FIRSTNAME)))
+                        .lastName(cursor.getString(cursor.getColumnIndex(COLUMN_LASTNAME)))
+                        .gender(cursor.getString(cursor.getColumnIndex(COLUMN_GENDER)))
+                        .contactDetails(contactDetails)
+                        .geographicalDetails(geographicalDetails)
+                        .idNumber(cursor.getString(cursor.getColumnIndex(COLUMN_ID_NUMBER)))
+                        .build();
+
+                employeeSet.add(employee);
+            } while (cursor.moveToNext());
+        }
+        return employeeSet;
     }
 
     @Override
     public int deleteAll() {
-        return 0;
+        open();
+        int rowsDeleted = db.delete(TABLE_NAME,null,null);
+        close();
+        return rowsDeleted;
     }
-}*/
+
+    @Override
+    public void onCreate(SQLiteDatabase db) {
+        db.execSQL(DATABASE_CREATE);
+    }
+
+    @Override
+    public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        Log.w(this.getClass().getName(),
+                "Upgrading database from version " + oldVersion + " to "
+                        + newVersion + ", which will destroy all old data");
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
+        onCreate(db);
+    }
+}
